@@ -1,0 +1,39 @@
+{
+  "Comment": "Run Spark jobs using serverless AWS Glue with sequential execution",
+  "StartAt": "RunSparkJob1",
+  "States": {
+    "RunSparkJob1": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "glue-job-agg1"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "JobFailed"
+        }
+      ],
+      "Next": "RunSparkJob2"
+    },
+    "RunSparkJob2": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "glue-job-agg2"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "JobFailed"
+        }
+      ],
+      "End": true
+    },
+    "JobFailed": {
+      "Type": "Fail",
+      "Error": "GlueJobFailedError",
+      "Cause": "One of the Glue Spark jobs failed to complete."
+    }
+  }
+}
